@@ -71,6 +71,52 @@ object ImagesFolderUtils {
             }
     }
 
+    fun File.cutVerticalStripes(nbrOfStripes: Int, output: String = "${this.absolutePath}-v$nbrOfStripes") {
+        validateDirectory()
+        initDirectory(output)
+
+        listAllImages()
+            .parallelStream()
+            .forEach {
+                try {
+                    val image = ImageIO.read(it)
+                    val stripeWidth = image.width / nbrOfStripes
+                    val fileName = it.name.split(".").first()
+                    val extension = it.name.split(".").last()
+
+                    (0 until nbrOfStripes).map { i ->
+                        val stripe = image.getSubimage(stripeWidth * i, 0, stripeWidth, image.height)
+                        ImageIO.write(stripe, "jpg", File("$output/$fileName-strip$i.$extension"))
+                    }
+                } catch (e: Exception) {
+                    println(e)
+                }
+            }
+    }
+
+    fun File.cutHorizontalStripes(nbrOfStripes: Int, output: String = "${this.absolutePath}-h$nbrOfStripes") {
+        validateDirectory()
+        initDirectory(output)
+
+        listAllImages()
+            .parallelStream()
+            .forEach {
+                try {
+                    val image = ImageIO.read(it)
+                    val stripeHeight = image.height / nbrOfStripes
+                    val fileName = it.name.split(".").first()
+                    val extension = it.name.split(".").last()
+
+                    (0 until nbrOfStripes).map { i ->
+                        val stripe = image.getSubimage(0, stripeHeight * i, image.width, stripeHeight)
+                        ImageIO.write(stripe, "jpg", File("$output/$fileName-strip$i.$extension"))
+                    }
+                } catch (e: Exception) {
+                    println(e)
+                }
+            }
+    }
+
     private fun File.validateDirectory() {
         if (!exists() || !isDirectory) {
             throw IllegalArgumentException("$this is not a folder or doesn't exist")
