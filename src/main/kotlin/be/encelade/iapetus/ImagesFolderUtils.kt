@@ -120,6 +120,7 @@ object ImagesFolderUtils {
     fun File.cutPiecesOf(width: Int, height: Int, output: String = "${this.absolutePath}-${width}x${height}") {
         validateDirectory()
         initDirectory(output)
+        var count = 0
 
         listAllImages()
             .parallelStream()
@@ -129,13 +130,14 @@ object ImagesFolderUtils {
                     val xCuts = image.width / width
                     val yCuts = image.height / height
 
-                    val fileName = it.name.split(".").first()
                     val extension = it.name.split(".").last()
 
                     (0 until xCuts).forEach { x ->
                         (0 until yCuts).forEach { y ->
                             val stripe = image.getSubimage(x * width, y * height, width, height)
-                            ImageIO.write(stripe, "jpg", File("$output/$fileName-${x}x${y}.$extension"))
+                            val filePrefix = count.toString().padStart(10, '0')
+                            ImageIO.write(stripe, "jpg", File("$output/$filePrefix-${x}x${y}.$extension"))
+                            count++
                         }
                     }
                 } catch (e: Exception) {
